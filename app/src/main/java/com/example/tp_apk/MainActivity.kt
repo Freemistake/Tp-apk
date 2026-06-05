@@ -33,11 +33,11 @@ class MainActivity : ComponentActivity() {
 
                     val lastLogin = dataStore.getLastLogin()
 
-                    val TWO_DAYS = 2 * 60 * 1000L
+                    val timeRequire = 2 * 60 * 1000L
                         //2 * 24 * 60 * 60 * 1000L
                     val now = System.currentTimeMillis()
                     startDestination =
-                        if ((now - lastLogin) >= TWO_DAYS)
+                        if ((now - lastLogin) >= timeRequire)
                             "login"
                         else
                             "home"
@@ -70,7 +70,16 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("home") {
-                        HomeScreen()
+                        HomeScreen(
+                            onSuccess = {
+                                navController.navigate("dashboard")
+                            }
+                        )
+                    }
+
+
+                    composable("dashboard") @androidx.annotation.RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE) {
+                        DashboardScreen()
                     }
                 }
             }

